@@ -66,15 +66,21 @@ End Sub
 
 Sub CreateMail()
     
-    Dim MyOutlookApp As Outlook.Application
-    Dim Mymail As Outlook.MailItem
+    Dim MyOutlookApp As Outlook.Application  ' - Early binding
+    Dim Mymail As Outlook.MailItem ' - Early binding
+    'Dim olApp As Object - ' Late binding
+    'Dim olMail As Object - ' Late binding
+    
     Dim besz As Long
     Dim Sendto As String
     Dim CCto As String
     Dim VendorName As String
     Dim Invocation As String
     Dim Language As String
+    Dim MailSignature As String
     
+     'Set olApp = GetObject(, "Outlook.application") - ' Late binding
+     'Set olMail = olApp.CreateItem(0) - ' Late binding
      Let besz = Sheet2.Range("D1").Value
     'Let Sendto =
     'Let CCto = ""
@@ -82,16 +88,21 @@ Sub CreateMail()
    ' Let Invocation =
     'Let Language =
     
-    Set MyOutlookApp = New Outlook.Application
-    Set Mymail = MyOutlookApp.CreateItem(olMailItem)
-       
+    
+    Set MyOutlookApp = New Outlook.Application ' - Early binding
+    Set Mymail = MyOutlookApp.CreateItem(olMailItem) ' - Early binding
+    
+    
             With Mymail
+            Let MailSignature = .HTMLBody
+            
                 .BodyFormat = olFormatHTML
                 .Display
+                
                 .To = "csaba.csontos@haldex.com"
                 .CC = ""
                 .Subject = "BACKLOG"
-                .HTMLBody = ""
+                .HTMLBody = MailSignature
                 
             End With
    
