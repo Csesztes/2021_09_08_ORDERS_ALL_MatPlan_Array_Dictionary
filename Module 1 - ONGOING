@@ -17,12 +17,6 @@ End Sub
 
 Sub GenerateBacklogXLSFiles()
 
-    With Application
-        .ScreenUpdating = False
-        .DisplayAlerts = False
-        .Calculation = xlCalculationManual
-    End With
-    
     Dim NewBacklogWB As Workbook
     Dim NewBacklogWS As Worksheet
     Dim besz As Long
@@ -32,6 +26,7 @@ Sub GenerateBacklogXLSFiles()
     Dim r As Long
     Dim c As Long
     Dim row As Long
+    
     
     Let row = 2
     Let besz = Sheet2.Range("D1").Value
@@ -59,37 +54,75 @@ Sub GenerateBacklogXLSFiles()
         
         .Range("N:S").Delete
         .UsedRange.EntireColumn.AutoFit
-    
     End With
+    NewBacklogWB.Close (True)
     
     Set NewBacklogWB = Nothing
     Set NewBacklogWS = Nothing
     Set CURRENTWB = Nothing
     Set CURRENTSHEET = Nothing
+
+End Sub
+
+Sub CreateMail()
     
-    Application.ScreenUpdating = True
-    Application.DisplayAlerts = True
-    Application.Calculation = xlCalculationAutomatic
+    Dim MyOutlookApp As Outlook.Application
+    Dim Mymail As Outlook.MailItem
+    Dim besz As Long
+    Dim Sendto As String
+    Dim CCto As String
+    Dim VendorName As String
+    Dim Invocation As String
+    Dim Language As String
     
+     Let besz = Sheet2.Range("D1").Value
+    'Let Sendto =
+    'Let CCto = ""
+    'Let VendorName =
+   ' Let Invocation =
+    'Let Language =
+    
+    Set MyOutlookApp = New Outlook.Application
+    Set Mymail = MyOutlookApp.CreateItem(olMailItem)
+       
+            With Mymail
+                .BodyFormat = olFormatHTML
+                .Display
+                .To = "csaba.csontos@haldex.com"
+                .CC = ""
+                .Subject = "BACKLOG"
+                .HTMLBody = ""
+                
+            End With
+   
 End Sub
 
 Sub GenerateMassBacklogXLSFiles()
+
+    With Application
+        .ScreenUpdating = False
+        .DisplayAlerts = False
+        .Calculation = xlCalculationManual
+    End With
 
     Dim dict As Scripting.Dictionary
     Dim VendorArray As Variant
     Dim lastrow
     Dim r As Long
-    
-    Let lastrow = Sheet1.UsedRange.Rows.Count
-    Let VendorArray = Sheet1.Range("D1", "D" & lastrow)
+   
+    Let lastrow = Sheet3.UsedRange.Rows.Count
+    Let VendorArray = Sheet3.Range("B4", "B" & lastrow)
     Set dict = New Scripting.Dictionary
     
     For r = LBound(VendorArray) To UBound(VendorArray) Step 1
         dict.Add r, VendorArray(r, 1)
-        Debug.Print dict(r)
+        Sheet2.Range("D1").Value = dict(r)
+        Call GenerateBacklogXLSFiles
     Next r
     
-    
+    Application.ScreenUpdating = True
+    Application.DisplayAlerts = True
+    Application.Calculation = xlCalculationAutomatic
     
 End Sub
 
