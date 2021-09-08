@@ -66,46 +66,84 @@ End Sub
 
 Sub CreateMail()
     
+    Application.ScreenUpdating = False
+    
     Dim MyOutlookApp As Outlook.Application  ' - Early binding
     Dim Mymail As Outlook.MailItem ' - Early binding
-    'Dim olApp As Object - ' Late binding
-    'Dim olMail As Object - ' Late binding
-    
-    Dim besz As Long
     Dim Sendto As String
     Dim CCto As String
     Dim VendorName As String
     Dim Invocation As String
     Dim Language As String
-    Dim MailSignature As String
+    Dim BacklogVendorArray As Variant
+    Dim LogshenArray As Variant
+    Dim i As Long
+    Dim c As Long
+    Dim attachmentPath As String
+    Dim engBody As String
+    Dim hunBody As String
+    Dim dict As Scripting.Dictionary
     
-     'Set olApp = GetObject(, "Outlook.application") - ' Late binding
-     'Set olMail = olApp.CreateItem(0) - ' Late binding
-     Let besz = Sheet2.Range("D1").Value
-    'Let Sendto =
-    'Let CCto = ""
-    'Let VendorName =
-   ' Let Invocation =
-    'Let Language =
+    Let BacklogVendorArray = Sheet3.Range("B4", "B" & Sheet3.UsedRange.Rows.Count - 1)
+    Let LogshenArray = Sheet1.UsedRange
+    Set dict = New Scripting.Dictionary
     
+    With dict
+        .Add "Anna", "anna.hernadi@haldex.com"
+        .Add "AGIC", "agota.csepi@haldex.com"
+        .Add "BaGy", "gyorgyi.bata@haldex.com"
+        .Add "CsCs", "Csaba.Csontos@Haldex.com"
+        .Add "GaDu", "gabor.durucz@haldex.com"
+        .Add "Isti", "istvan.nagy@haldex.com"
+        .Add "Rich", "richard.tlesimunka@haldex.com"
+    End With
     
-    Set MyOutlookApp = New Outlook.Application ' - Early binding
-    Set Mymail = MyOutlookApp.CreateItem(olMailItem) ' - Early binding
-    
-    
-            With Mymail
-            Let MailSignature = .HTMLBody
-            
-                .BodyFormat = olFormatHTML
-                .Display
+    For i = LBound(BacklogVendorArray, 1) To UBound(BacklogVendorArray, 1) Step 1
+        For c = LBound(LogshenArray, 1) To UBound(LogshenArray, 1) Step 1
+            If BacklogVendorArray(i, 1) = LogshenArray(c, 4) Then
+                Let Sendto = LogshenArray(c, 8)
+                Let CCto = ""
+                Let VendorName = LogshenArray(c, 5)
+                Let Invocation = LogshenArray(c, 7)
+                Let Language = LogshenArray(c, 6)
+                Set MyOutlookApp = New Outlook.Application ' - Early binding
+                Set Mymail = MyOutlookApp.CreateItem(olMailItem) ' - Early binding
+                Let attachmentPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & Date
+                Let engBody = "Dear " & Invocation & "," & vbNewLine & vbNewLine & "This is an automated message regarding your backlogs." & vbNewLine & vbNewLine & "Please check the attached list and inform us about next best possible eta and qt-s for the affected items." & vbNewLine & vbNewLine & "Thank you in advance for your cooperation." & vbNewLine & vbNewLine & "Best regards"
+                Let hunBody = "Kedves " & Invocation & "," & vbNewLine & vbNewLine & "Ez egy automata üzenet az elmaradásban lévő tételekről." & vbNewLine & vbNewLine & "Kérem ellenőrizze a csatolt fájlt és jelezzen vissza a várható szállításokról.." & vbNewLine & vbNewLine & "Előre is köszönöm a segítségét." & vbNewLine & vbNewLine & "Üdvözlettel:"
                 
-                .To = "csaba.csontos@haldex.com"
-                .CC = ""
-                .Subject = "BACKLOG"
-                .HTMLBody = MailSignature
-                
-            End With
-   
+                If Language = "EN" Then
+                    With Mymail
+                        .BodyFormat = olFormatHTML
+                        .Display
+                        .To = Sendto
+                        .CC = dict(LogshenArray(c, 2))
+                        .Subject = "BACKLOG" & " " & VendorName & " " & "WK" & WorksheetFunction.IsoWeekNum(Date)
+                        .Body = engBody & vbNewLine & .Body
+                        .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xls"
+                    End With
+                Else
+                     With Mymail
+                        .BodyFormat = olFormatHTML
+                        .Display
+                        .To = Sendto
+                        .CC = dict(LogshenArray(c, 2))
+                        .Subject = "BACKLOG" & " " & VendorName & " " & "WK" & WorksheetFunction.IsoWeekNum(Date)
+                        .Body = hunBody & vbNewLine & .Body
+                        .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xls"
+                    End With
+                End If
+            End If
+        Next c
+    Next i
+    
+    Erase BacklogVendorArray
+    Erase LogshenArray
+    Set MyOutlookApp = Nothing
+    Set Mymail = Nothing
+    
+    Application.ScreenUpdating = False
+    
 End Sub
 
 Sub GenerateMassBacklogXLSFiles()
