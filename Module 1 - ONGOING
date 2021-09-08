@@ -4,15 +4,15 @@ Sub Refresh()
    ThisWorkbook.Connections(1).Refresh
 End Sub
 
-Sub Create_BACKLOG_FOLDER()
+Public Sub Create_BACKLOG_FOLDER()
 
     On Error GoTo leave
-    MkDir "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & Date
+    MkDir "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
     MsgBox "Folder is created.", vbInformation
     Exit Sub
 leave:
     MsgBox "Folder already exists.", vbInformation
-    
+
 End Sub
 
 Sub GenerateBacklogXLSFiles()
@@ -26,8 +26,9 @@ Sub GenerateBacklogXLSFiles()
     Dim r As Long
     Dim c As Long
     Dim row As Long
+    Dim FolderPath As String
     
-    
+    Let FolderPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
     Let row = 2
     Let besz = Sheet2.Range("D1").Value
     Set NewBacklogWB = Workbooks.Add
@@ -36,7 +37,15 @@ Sub GenerateBacklogXLSFiles()
     Set CURRENTSHEET = CURRENTWB.Sheets("AX_OPEN_ORDERS_TXT")
     TableArray = CURRENTSHEET.ListObjects("AX_OPEN_ORDERS_TXT").Range
     
-    NewBacklogWB.SaveAs ("K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & Date & "\" & besz & ".xls")
+    If Dir(FolderPath, vbDirectory) = "" Then
+        Call Create_BACKLOG_FOLDER
+        GoTo SkipFolder
+    Else
+        GoTo SkipFolder
+    End If
+    
+SkipFolder:
+    NewBacklogWB.SaveAs ("K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date) & "\" & besz & ".xls")
     NewBacklogWS.Name = besz
     NewBacklogWS.Tab.Color = vbRed
     
@@ -108,7 +117,7 @@ Sub CreateMail()
                 Let Language = LogshenArray(c, 6)
                 Set MyOutlookApp = New Outlook.Application ' - Early binding
                 Set Mymail = MyOutlookApp.CreateItem(olMailItem) ' - Early binding
-                Let attachmentPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & Date
+                Let attachmentPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
                 Let engBody = "Dear " & Invocation & "," & vbNewLine & vbNewLine & "This is an automated message regarding your backlogs." & vbNewLine & vbNewLine & "Please check the attached list and inform us about next best possible eta and qt-s for the affected items." & vbNewLine & vbNewLine & "Thank you in advance for your cooperation." & vbNewLine & vbNewLine & "Best regards"
                 Let hunBody = "Kedves " & Invocation & "," & vbNewLine & vbNewLine & "Ez egy automata üzenet az elmaradásban lévő tételekről." & vbNewLine & vbNewLine & "Kérem ellenőrizze a csatolt fájlt és jelezzen vissza a várható szállításokról.." & vbNewLine & vbNewLine & "Előre is köszönöm a segítségét." & vbNewLine & vbNewLine & "Üdvözlettel:"
                 
