@@ -1,0 +1,30 @@
+Option Explicit
+
+Sub OrdersToCheck()
+
+    Dim Orders() As Variant
+    Dim ResultOrders() As Variant
+    Dim counter As Long
+    Dim ResultOrderCounter As Long
+    Dim r As Long
+    Dim x As Long 'ResultOrders array row counter
+    
+    Let Orders = Sheet2.ListObjects("AX_OPEN_ORDERS_TXT").Range
+    Let x = 1
+    
+    For counter = LBound(Orders, 1) To UBound(Orders, 1) Step 1
+        If Orders(counter, 11) <= Date Then
+            For r = LBound(Orders, 2) To UBound(Orders, 2) Step 1
+                ReDim Preserve ResultOrders(1 To UBound(Orders, 1), 1 To UBound(Orders, 2)) As Variant
+                ResultOrders(x, r) = Orders(counter, r)
+            Next r
+            x = x + 1
+        End If
+    Next counter
+    
+    With Sheet4
+        .Range("A2", "S" & UBound(ResultOrders)).Value = ResultOrders
+        .Columns("P:S").Delete
+        .UsedRange.Columns.AutoFit
+    End With
+End Sub
