@@ -1,10 +1,10 @@
 Option Explicit
 
-Sub Refresh()
+Public Sub Refresh()
    ThisWorkbook.Connections(1).Refresh
 End Sub
 
-Public Sub Create_BACKLOG_FOLDER()
+Private Sub Create_BACKLOG_FOLDER()
 
     On Error GoTo leave
     MkDir "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
@@ -15,7 +15,7 @@ leave:
 
 End Sub
 
-Sub GenerateBacklogXLSFiles()
+Public Sub GenerateBacklogXLSFiles()
 
     Dim NewBacklogWB As Workbook
     Dim NewBacklogWS As Worksheet
@@ -27,6 +27,8 @@ Sub GenerateBacklogXLSFiles()
     Dim c As Long
     Dim row As Long
     Dim FolderPath As String
+    
+    Sheet3.PivotTables(1).PivotCache.Refresh
     
     Let FolderPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
     Let row = 2
@@ -73,7 +75,7 @@ SkipFolder:
 
 End Sub
 
-Public Sub CreateMail()
+Private Sub CreateMail()
     
     Application.ScreenUpdating = False
     
@@ -82,6 +84,7 @@ Public Sub CreateMail()
     Dim Sendto As String
     Dim CCto As String
     Dim VendorName As String
+    Dim VendorCode As String
     Dim Invocation As String
     Dim Language As String
     Dim BacklogVendorArray As Variant
@@ -92,6 +95,8 @@ Public Sub CreateMail()
     Dim engBody As String
     Dim hunBody As String
     Dim dict As Scripting.Dictionary
+    
+    Sheet3.PivotTables(1).PivotCache.Refresh
     
     Let BacklogVendorArray = Sheet3.Range("B4", "B" & Sheet3.UsedRange.Rows.Count - 1)
     Let LogshenArray = Sheet1.UsedRange
@@ -105,48 +110,81 @@ Public Sub CreateMail()
         .Add "GaDu", "gabor.durucz@haldex.com"
         .Add "Isti", "istvan.nagy@haldex.com"
         .Add "Rich", "richard.tlesimunka@haldex.com"
+        .Add "BoKi", "borbala.gyulavari-kis@haldex.com"
     End With
     
     For i = LBound(BacklogVendorArray, 1) To UBound(BacklogVendorArray, 1) Step 1
         For c = LBound(LogshenArray, 1) To UBound(LogshenArray, 1) Step 1
-            If BacklogVendorArray(i, 1) = LogshenArray(c, 4) Then
-                Let Sendto = LogshenArray(c, 8)
-                Let CCto = ""
-                Let VendorName = LogshenArray(c, 5)
-                Let Invocation = LogshenArray(c, 7)
-                Let Language = LogshenArray(c, 6)
-                Set MyOutlookApp = New Outlook.Application ' - Early binding
-                Set Mymail = MyOutlookApp.CreateItem(olMailItem) ' - Early binding
-                Let attachmentPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
-                Let engBody = "Dear " & Invocation & "," & vbNewLine & vbNewLine & "This is an automated message regarding your backlogs." & vbNewLine & vbNewLine & "Please check the attached list and inform us about next best possible eta and qt-s for the affected items." & vbNewLine & vbNewLine & "Thank you in advance for your cooperation." & vbNewLine & vbNewLine & "Best regards"
-                Let hunBody = "Kedves " & Invocation & "," & vbNewLine & vbNewLine & "Ez egy automata üzenet az elmaradásban lévő tételekről." & vbNewLine & vbNewLine & "Kérem ellenőrizze a csatolt fájlt és jelezzen vissza a várható szállításokról." & vbNewLine & vbNewLine & "Előre is köszönöm a segítségét." & vbNewLine & vbNewLine & "Üdvözlettel:"
-                
-                If Language = "EN" Then
-                    With Mymail
-                        .BodyFormat = olFormatHTML
-                        .Display
-                        '.To = "csaba.csontos@haldex.com"
-                        .To = Sendto
-                        .CC = dict(LogshenArray(c, 2))
-                        .Subject = "TESTRUN" & " " & "BACKLOG" & " " & VendorName & " " & "WK" & WorksheetFunction.IsoWeekNum(Date)
-                        .Body = engBody & vbNewLine & .Body
-                        .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xls"
-                        '.Send
-                    End With
-                Else
-                     With Mymail
-                        .BodyFormat = olFormatHTML
-                        .Display
-                        '.To = "csaba.csontos@haldex.com"
-                        .To = Sendto
-                        .CC = dict(LogshenArray(c, 2))
-                        .Subject = "TESTRUN" & " " & "BACKLOG" & " " & VendorName & " " & "WK" & WorksheetFunction.IsoWeekNum(Date)
-                        .Body = hunBody & vbNewLine & .Body
-                        .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xls"
-                        '.Send
-                    End With
+                If BacklogVendorArray(i, 1) = LogshenArray(c, 4) Then
+                        Let Sendto = LogshenArray(c, 8)
+                        Let CCto = ""
+                        Let VendorName = LogshenArray(c, 5)
+                        Let VendorCode = LogshenArray(c, 4)
+                        Let Invocation = LogshenArray(c, 7)
+                        Let Language = LogshenArray(c, 6)
+                        Set MyOutlookApp = New Outlook.Application ' - Early binding
+                        Set Mymail = MyOutlookApp.CreateItem(olMailItem) ' - Early binding
+                        Let attachmentPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
+                        Let engBody = "Dear " & Invocation & "," & vbNewLine & vbNewLine & "This is an automated message regarding your backlogs." & vbNewLine & vbNewLine & "Please check the attached list and inform responsible material planner in CC about next best possible ETA and quantities for the affected items." & vbNewLine & " If we have discussed the backlogs already, or the goods are in transit, or the goods are already at Haldex but not booked yet, then please feel free toignore this mail. " & vbNewLine & vbNewLine & "Thank you in advance for your cooperation." & vbNewLine & vbNewLine & "Best regards"
+                        Let hunBody = "Kedves " & Invocation & "," & vbNewLine & vbNewLine & "Ez egy automata üzenet az elmaradásban lévő tételekről." & vbNewLine & vbNewLine & "Kérem ellenőrizze a csatolt fájlt és jelezzen vissza a várható szállításokról a másolatban szereplő anyaggazdának." & vbNewLine & vbNewLine & " Amennyiben már megbeszéltük az elmaradásokat vagy az áru úton van, kérem tekintse tárgytalannak levelem.  " & vbNewLine & vbNewLine & "Előre is köszönöm a segítségét." & vbNewLine & vbNewLine & "Üdvözlettel:"
+                        
+                            Select Case BacklogVendorArray(i, 1)
+                                Case Is = 110279  'BR-Elektronik GmbH- Bagy kivétel
+                                    
+                                Case Is = 110489  'Castec Korea Co., Ltd. - Bagy kivétel
+                                
+                                Case Is = 110902 'a Mercury GAdu kivétel - GADU kivétel
+                                
+                                Case Is = 400017 'PAPIRON KFT - ÁGIC kivétel
+                                
+                                Case Is = 111357 'HALDEX BRAKE PRODUCTS GMBH - ÁGIC kivétel
+                                
+                                Case Is = 110110  ' Ferro_press - Isti kivétel
+                                
+                                Case Is = 111443  ' Tinex - ANNA
+                                
+                                Case Is = 110645 ' VT metal - Anna
+                                
+                                Case Is = 111199 'Helvoet - Anna
+                                
+                                Case Is = 400009 ' Würth - AGIC
+                                
+                                Case Is = 400017 ' Papiron AGIC
+                                
+                                Case Is = 111357 ' Haldex Brake Prod AGIC
+                                
+                                Case Is = 110563 ' Tischer Agic
+                                    
+                                Case Is = 110457 ' Lutz Agic
+                                
+                                Case Is = 110591 'Dietz Agic
+                                
+                                Case Else
+                                    If Language = "EN" Then
+                                        With Mymail
+                                            .BodyFormat = olFormatHTML
+                                            .Display
+                                            .To = Sendto
+                                            .CC = dict(LogshenArray(c, 2))
+                                            .Subject = "BACKLOG " & " " & VendorCode & " " & " " & VendorName & " WK" & WorksheetFunction.IsoWeekNum(Date)
+                                            .Body = engBody & vbNewLine & .Body
+                                            .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xls"
+                                            .Send
+                                        End With
+                                    Else
+                                         With Mymail
+                                            .BodyFormat = olFormatHTML
+                                            .Display
+                                            .To = Sendto
+                                            .CC = dict(LogshenArray(c, 2))
+                                            .Subject = "BACKLOG" & " " & VendorCode & " " & " " & VendorName & "WK" & WorksheetFunction.IsoWeekNum(Date)
+                                            .Body = hunBody & vbNewLine & .Body
+                                            .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xls"
+                                            .Send
+                                        End With
+                                   End If
+                            End Select
                 End If
-            End If
         Next c
     Next i
     
@@ -159,7 +197,47 @@ Public Sub CreateMail()
     
 End Sub
 
-Sub GenerateMassBacklogXLSFiles()
+Public Sub GenerateMassBacklogXLSFiles()
+
+    With Application
+        .ScreenUpdating = False
+        .DisplayAlerts = False
+        .Calculation = xlCalculationManual
+    End With
+
+    Dim dict As Scripting.Dictionary
+    Dim VendorArray As Variant
+    Dim lastrow
+    Dim r As Long
+    Dim answer As VbMsgBoxResult
+   
+    Sheet3.PivotTables(1).PivotCache.Refresh
+    Let lastrow = Sheet3.UsedRange.Rows.Count
+    Let VendorArray = Sheet3.Range("B4", "B" & lastrow)
+    Set dict = New Scripting.Dictionary
+    Let answer = MsgBox("Would you like to run MASS BACKLOG XLS report?", vbYesNo + vbQuestion, "Confirm action")
+    
+    If answer = vbYes Then
+        Sheet3.PivotTables(1).PivotCache.Refresh
+        For r = LBound(VendorArray) To UBound(VendorArray) Step 1
+            dict.Add r, VendorArray(r, 1)
+            Sheet2.Range("D1").Value = dict(r)
+            Call GenerateBacklogXLSFiles
+        Next r
+    Else
+        Application.ScreenUpdating = True
+        Application.DisplayAlerts = True
+        Application.Calculation = xlCalculationAutomatic
+        Exit Sub
+    End If
+
+    Application.ScreenUpdating = True
+    Application.DisplayAlerts = True
+    Application.Calculation = xlCalculationAutomatic
+    
+End Sub
+
+Public Sub GenerateMassMailAndXLSFiles()
 
     With Application
         .ScreenUpdating = False
@@ -176,9 +254,10 @@ Sub GenerateMassBacklogXLSFiles()
     Let lastrow = Sheet3.UsedRange.Rows.Count
     Let VendorArray = Sheet3.Range("B4", "B" & lastrow)
     Set dict = New Scripting.Dictionary
-    Let answer = MsgBox("Would you like to run MASS BACKLOG REPORT?", vbYesNo + vbQuestion, "Confirm action")
+    Let answer = MsgBox("Would you like to run MASS BACKLOG XLS AND MAIL report?", vbYesNo + vbQuestion, "Confirm action")
     
     If answer = vbYes Then
+        Sheet3.PivotTables(1).PivotCache.Refresh
         For r = LBound(VendorArray) To UBound(VendorArray) Step 1
             dict.Add r, VendorArray(r, 1)
             Sheet2.Range("D1").Value = dict(r)
@@ -186,6 +265,7 @@ Sub GenerateMassBacklogXLSFiles()
         Next r
         
         Call CreateMail
+        
     Else
         Application.ScreenUpdating = True
         Application.DisplayAlerts = True
@@ -193,10 +273,11 @@ Sub GenerateMassBacklogXLSFiles()
         Exit Sub
     End If
     
-    Application.ScreenUpdating = True
-    Application.DisplayAlerts = True
-    Application.Calculation = xlCalculationAutomatic
+    With Application
+        .ScreenUpdating = True
+        .Application.DisplayAlerts = True
+        .Application.Calculation = xlCalculationAutomatic
+    End With
     
+    MsgBox "Script is finished."
 End Sub
-
-
