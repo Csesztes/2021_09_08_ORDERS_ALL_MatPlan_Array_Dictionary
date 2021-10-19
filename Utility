@@ -22,3 +22,13 @@ End Sub
 Private Sub CommandButton4_Click()
     Call GenerateMassMailAndXLSFiles
 End Sub
+
+
+Private Sub Worksheet_Activate()
+
+Dim pt As PivotTable
+Set pt = Sheet3.PivotTables(1)
+
+pt.PivotCache.Refresh
+
+End Sub
