@@ -47,9 +47,10 @@ Public Sub GenerateBacklogXLSFiles()
     End If
     
 SkipFolder:
-    NewBacklogWB.SaveAs ("K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date) & "\" & besz & ".xls")
+    NewBacklogWB.SaveAs ("K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date) & "\" & besz & ".xlsx")
     NewBacklogWS.Name = besz
     NewBacklogWS.Tab.Color = vbRed
+    NewBacklogWS.Range("G:G").NumberFormat = "@"
     
     With NewBacklogWS
         CURRENTSHEET.ListObjects("AX_OPEN_ORDERS_TXT").HeaderRowRange.Copy Destination:=.Range("A1")
@@ -66,6 +67,18 @@ SkipFolder:
         .Range("N:S").Delete
         .UsedRange.EntireColumn.AutoFit
     End With
+    
+    'Pivot part
+    Dim PivotWs As Worksheet
+    Dim pc As PivotCache
+    Dim pt As PivotTable
+    Set PivotWs = Worksheets.Add: PivotWs.Name = "PIVOT"
+    Set pc = NewBacklogWB.PivotCaches.Create(xlDatabase, NewBacklogWS.UsedRange.Address)
+    Set pt = pc.CreatePivotTable(PivotWs.Range("A1"), "BacklogPIvot")
+    
+    pt.AddFields Array("Item number", "Purchase order"), "Delivery date"
+    pt.AddDataField pt.PivotFields("Deliver remainder")
+
     NewBacklogWB.Close (True)
     
     Set NewBacklogWB = Nothing
@@ -125,7 +138,7 @@ Private Sub CreateMail()
                         Set MyOutlookApp = New Outlook.Application ' - Early binding
                         Set Mymail = MyOutlookApp.CreateItem(olMailItem) ' - Early binding
                         Let attachmentPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
-                        Let engBody = "Dear " & Invocation & "," & vbNewLine & vbNewLine & "This is an automated message regarding your backlogs." & vbNewLine & vbNewLine & "Please check the attached list and inform responsible material planner in CC about next best possible ETA and quantities for the affected items." & vbNewLine & " If we have discussed the backlogs already, or the goods are in transit, or the goods are already at Haldex but not booked yet, then please feel free toignore this mail. " & vbNewLine & vbNewLine & "Thank you in advance for your cooperation." & vbNewLine & vbNewLine & "Best regards"
+                        Let engBody = "Dear " & Invocation & "," & vbNewLine & vbNewLine & "This is an automated message regarding your backlogs." & vbNewLine & vbNewLine & "Please check the attached list and inform responsible material planner in CC about next best possible ETA and quantities for the affected items. Please be so kind to leave me out from the response mail." & vbNewLine & " If we have discussed the backlogs already, or the goods are in transit, or the goods are already at Haldex but not booked yet, then please feel free toignore this mail. " & vbNewLine & vbNewLine & "Thank you in advance for your cooperation." & vbNewLine & vbNewLine & "Best regards"
                         Let hunBody = "Kedves " & Invocation & "," & vbNewLine & vbNewLine & "Ez egy automata üzenet az elmaradásban lévő tételekről." & vbNewLine & vbNewLine & "Kérem ellenőrizze a csatolt fájlt és jelezzen vissza a várható szállításokról a másolatban szereplő anyaggazdának." & vbNewLine & vbNewLine & " Amennyiben már megbeszéltük az elmaradásokat vagy az áru úton van, kérem tekintse tárgytalannak levelem.  " & vbNewLine & vbNewLine & "Előre is köszönöm a segítségét." & vbNewLine & vbNewLine & "Üdvözlettel:"
                         
                             Select Case BacklogVendorArray(i, 1)
@@ -146,19 +159,21 @@ Private Sub CreateMail()
                                 Case Is = 110645 ' VT metal - Anna
                                 
                                 Case Is = 111199 'Helvoet - Anna
+         
+                                Case Is = 111357 'Haldex Heidelberg - Ágic
                                 
-                                Case Is = 400009 ' Würth - AGIC
+                                Case Is = 400017 ' Papiron - Ágic
                                 
-                                Case Is = 400017 ' Papiron AGIC
+                                'Optional on occasion
                                 
-                                Case Is = 111357 ' Haldex Brake Prod AGIC
+                                Case Is = 110452
                                 
-                                Case Is = 110563 ' Tischer Agic
-                                    
-                                Case Is = 110457 ' Lutz Agic
+                                Case Is = 110430
                                 
-                                Case Is = 110591 'Dietz Agic
+                                Case Is = 100805
                                 
+                                Case Is = 110563
+                
                                 Case Else
                                     If Language = "EN" Then
                                         With Mymail
@@ -168,7 +183,7 @@ Private Sub CreateMail()
                                             .CC = dict(LogshenArray(c, 2))
                                             .Subject = "BACKLOG " & " " & VendorCode & " " & " " & VendorName & " WK" & WorksheetFunction.IsoWeekNum(Date)
                                             .Body = engBody & vbNewLine & .Body
-                                            .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xls"
+                                            .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xlsx"
                                             .Send
                                         End With
                                     Else
@@ -179,7 +194,7 @@ Private Sub CreateMail()
                                             .CC = dict(LogshenArray(c, 2))
                                             .Subject = "BACKLOG" & " " & VendorCode & " " & " " & VendorName & "WK" & WorksheetFunction.IsoWeekNum(Date)
                                             .Body = hunBody & vbNewLine & .Body
-                                            .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xls"
+                                            .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xlsx"
                                             .Send
                                         End With
                                    End If
