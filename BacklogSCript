@@ -1,0 +1,51 @@
+Option Explicit
+
+Public Sub CheckIFBacklog()
+
+    Application.ScreenUpdating = False
+    
+    Dim counter As Long
+    Dim lastrow As Long
+
+    Let lastrow = Sheet2.ListObjects("AX_OPEN_ORDERS_TXT").Range.Rows.Count + 1
+    
+    Sheet2.Range("A3", "A" & lastrow).ClearContents
+
+    For counter = 3 To lastrow
+        If WorksheetFunction.XLookup(Sheet2.Range("C" & counter).Value, Sheet5.Range("A$2:A$3000"), Sheet5.Range("C$2:C$3000")) = "FO-S" Then
+            If Sheet2.Range("L" & counter).Value + 3 < Date Then
+                Sheet2.Range("A" & counter).Value = "BACKLOG"
+            Else
+                Sheet2.Range("A" & counter).Value = "ORDER"
+            End If
+            
+        ElseIf WorksheetFunction.XLookup(Sheet2.Range("C" & counter).Value, Sheet5.Range("A$2:A$3000"), Sheet5.Range("C$2:C$3000")) = "FO-S" _
+        And WorksheetFunction.XLookup(Sheet2.Range("C" & counter).Value, Sheet5.Range("A$2:A$3000"), Sheet5.Range("D$2:D$3000")) = "GB" Then
+            If Sheet2.Range("K" & counter).Value + 3 < Date Then
+                Sheet2.Range("A" & counter).Value = "BACKLOG"
+            Else
+                Sheet2.Range("A" & counter).Value = "ORDER"
+            End If
+        
+        ElseIf WorksheetFunction.XLookup(Sheet2.Range("C" & counter).Value, Sheet5.Range("A$2:A$3000"), Sheet5.Range("C$2:C$3000")) = "FO-S" _
+        And WorksheetFunction.XLookup(Sheet2.Range("C" & counter).Value, Sheet5.Range("A$2:A$3000"), Sheet5.Range("D$2:D$3000")) = "CH" Then
+            If Sheet2.Range("K" & counter).Value + 3 < Date Then
+                Sheet2.Range("A" & counter).Value = "BACKLOG"
+            Else
+                Sheet2.Range("A" & counter).Value = "ORDER"
+            End If
+            
+        Else
+             If Sheet2.Range("K" & counter).Value + 3 < Date Then
+                Sheet2.Range("A" & counter).Value = "BACKLOG"
+            Else
+                Sheet2.Range("A" & counter).Value = "ORDER"
+            End If
+        End If
+    Next counter
+    
+    Application.ScreenUpdating = True
+    
+End Sub
+
+
