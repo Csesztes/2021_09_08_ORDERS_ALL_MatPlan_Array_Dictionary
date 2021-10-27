@@ -72,11 +72,13 @@ SkipFolder:
     Dim PivotWs As Worksheet
     Dim pc As PivotCache
     Dim pt As PivotTable
-    Set PivotWs = Worksheets.Add: PivotWs.Name = "PIVOT"
+    Set PivotWs = Worksheets.Add
+    PivotWs.Name = "PIVOT"
+    PivotWs.Tab.Color = VBA.ColorConstants.vbYellow
     Set pc = NewBacklogWB.PivotCaches.Create(xlDatabase, NewBacklogWS.UsedRange.Address)
     Set pt = pc.CreatePivotTable(PivotWs.Range("A1"), "BacklogPIvot")
     
-    pt.AddFields Array("Item number", "Purchase order"), "Delivery date"
+    pt.AddFields "Item number", "Delivery date"
     pt.AddDataField pt.PivotFields("Deliver remainder")
 
     NewBacklogWB.Close (True)
@@ -142,7 +144,12 @@ Private Sub CreateMail()
                         Let hunBody = "Kedves " & Invocation & "," & vbNewLine & vbNewLine & "Ez egy automata üzenet az elmaradásban lévő tételekről." & vbNewLine & vbNewLine & "Kérem ellenőrizze a csatolt fájlt és jelezzen vissza a várható szállításokról a másolatban szereplő anyaggazdának." & vbNewLine & vbNewLine & " Amennyiben már megbeszéltük az elmaradásokat vagy az áru úton van, kérem tekintse tárgytalannak levelem.  " & vbNewLine & vbNewLine & "Előre is köszönöm a segítségét." & vbNewLine & vbNewLine & "Üdvözlettel:"
                         
                             Select Case BacklogVendorArray(i, 1)
+                                
+                            ' constant remove from backlog report
+                                
                                 Case Is = 110279  'BR-Elektronik GmbH- Bagy kivétel
+                                
+                                Case Is = 110368  'Larry Lin & Co
                                     
                                 Case Is = 110489  'Castec Korea Co., Ltd. - Bagy kivétel
                                 
@@ -164,15 +171,19 @@ Private Sub CreateMail()
                                 
                                 Case Is = 400017 ' Papiron - Ágic
                                 
-                                'Optional on occasion
+                            'Weekly Optional
+                                
+                                Case Is = 400009
+                                
+                                Case Is = 110563
+                                
+                                Case Is = 110803
                                 
                                 Case Is = 110452
                                 
-                                Case Is = 110430
-                                
                                 Case Is = 100805
                                 
-                                Case Is = 110563
+                                Case Is = 110441
                 
                                 Case Else
                                     If Language = "EN" Then
@@ -270,8 +281,13 @@ Public Sub GenerateMassMailAndXLSFiles()
     Let VendorArray = Sheet3.Range("B4", "B" & lastrow)
     Set dict = New Scripting.Dictionary
     Let answer = MsgBox("Would you like to run MASS BACKLOG XLS AND MAIL report?", vbYesNo + vbQuestion, "Confirm action")
-    
+
     If answer = vbYes Then
+        Dim lastTableRow As Long
+        Let lastTableRow = Sheet2.ListObjects(1).Range.Rows.Count + 1
+        
+        Sheet2.Range("A3", "A" & lastTableRow).Clear
+        Call CheckIFBacklog
         Sheet3.PivotTables(1).PivotCache.Refresh
         For r = LBound(VendorArray) To UBound(VendorArray) Step 1
             dict.Add r, VendorArray(r, 1)
