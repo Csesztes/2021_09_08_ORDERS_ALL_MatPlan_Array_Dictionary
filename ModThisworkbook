@@ -1,0 +1,10 @@
+Option Explicit
+
+Private Sub Workbook_BeforeClose(Cancel As Boolean)
+    Call DeleteShortcut
+End Sub
+
+Private Sub Workbook_Open()
+    Call CreateShortcut
+    Application.StatusBar = "   Press Shift + m for Menu "
+End Sub
