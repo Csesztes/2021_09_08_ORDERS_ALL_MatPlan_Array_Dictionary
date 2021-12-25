@@ -1,0 +1,177 @@
+Option Explicit
+
+Enum LogshenColumns
+    LsVendorCode = 3
+    LsVendorName = LsVendorCode + 1
+    LsVendorInvocation = LsVendorCode + 3
+    LsVendorLanguage = LsVendorCode + 2
+    LsSendTo = LsVendorCode + 4
+    LsMainBuyer = LsVendorCode - 2
+End Enum
+
+Public Sub CreateMassMail()
+
+    Dim MyOutlookApp As Outlook.Application  ' - Early binding
+    Dim Mymail As Outlook.MailItem ' - Early binding
+    Dim Sendto As String
+    Dim CCto As String
+    Dim VendorName As String
+    Dim VendorCode As String
+    Dim Invocation As String
+    Dim Language As String
+    Dim BacklogVendorArray As Variant
+    Dim LogshenArray As Variant
+    Dim i As Long
+    Dim c As Long
+    Dim attachmentPath As String
+    Dim engBody As String
+    Dim hunBody As String
+    Dim dict As Scripting.Dictionary
+    
+    Sheet3.PivotTables(1).PivotCache.Refresh
+    
+    Let BacklogVendorArray = Sheet3.Range("B4", "B" & Sheet3.UsedRange.Rows.Count - 1)
+    Let LogshenArray = Sheet1.UsedRange
+    Set dict = New Scripting.Dictionary
+    
+    With dict
+        .Add "Anna", "anna.hernadi@haldex.com"
+        .Add "AGIC", "agota.csepi@haldex.com"
+        .Add "BaGy", "gyorgyi.bata@haldex.com"
+        .Add "CsCs", "Csaba.Csontos@Haldex.com"
+        .Add "GaDu", "gabor.durucz@haldex.com"
+        .Add "Isti", "istvan.nagy@haldex.com"
+        .Add "Rich", "richard.tlesimunka@haldex.com"
+        .Add "BoKi", "borbala.gyulavari-kis@haldex.com"
+        .Add "KLAU", "klaudia.kovacs@haldex.com"
+    End With
+    
+    For i = LBound(BacklogVendorArray, 1) To UBound(BacklogVendorArray, 1) Step 1
+        For c = LBound(LogshenArray, 1) To UBound(LogshenArray, 1) Step 1
+                If BacklogVendorArray(i, 1) = LogshenArray(c, 3) Then
+                        Let Sendto = LogshenArray(c, LsSendTo)
+                        Let CCto = ""
+                        Let VendorName = LogshenArray(c, LsVendorName)
+                        Let VendorCode = LogshenArray(c, LsVendorCode)
+                        Let Invocation = LogshenArray(c, LsVendorInvocation)
+                        Let Language = LogshenArray(c, LsVendorLanguage)
+                        Set MyOutlookApp = New Outlook.Application ' - Early binding
+                        Set Mymail = MyOutlookApp.CreateItem(olMailItem) ' - Early binding
+                        Let attachmentPath = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
+                        Let engBody = "Dear " & Invocation & "," & vbNewLine & vbNewLine & "This is an automated message regarding your backlogs." & vbNewLine & vbNewLine & _
+                            "Please check the attached list and inform responsible material planner in CC about next best possible ETA and quantities for the affected items. Please be so kind to leave me out from the response mail." _
+                            & vbNewLine & " If we have discussed the backlogs already, or the goods are in transit, or the goods are already at Haldex but not booked yet, then please feel free toignore this mail. " _
+                            & vbNewLine & vbNewLine & "Thank you in advance for your cooperation." & vbNewLine & vbNewLine & "Best regards"
+                        
+                        Let hunBody = "Kedves " & Invocation & "," & vbNewLine & vbNewLine & "Ez egy automata üzenet az elmaradásban lévő tételekről." _
+                            & vbNewLine & vbNewLine & "Kérem ellenőrizze a csatolt fájlt és jelezzen vissza a várható szállításokról a másolatban szereplő anyaggazdának. Kérem a válaszát kizárólag a fő kontaktjának küldje!" _
+                            & vbNewLine & vbNewLine & " Amennyiben már megbeszéltük az elmaradásokat vagy az áru úton van, kérem tekintse tárgytalannak levelem.  " _
+                            & vbNewLine & vbNewLine & "Előre is köszönöm a segítségét." & vbNewLine & vbNewLine & "Üdvözlettel:"
+                        
+                            Select Case BacklogVendorArray(i, 1) ' constant remove from backlog report
+                                
+                                Case Is = ShExeptions.Range("A2").Value
+                                Case Is = ShExeptions.Range("A3").Value
+                                Case Is = ShExeptions.Range("A4").Value
+                                Case Is = ShExeptions.Range("A5").Value
+                                Case Is = ShExeptions.Range("A6").Value
+                                Case Is = ShExeptions.Range("A7").Value
+                                Case Is = ShExeptions.Range("A8").Value
+                                Case Is = ShExeptions.Range("A9").Value
+                                Case Is = ShExeptions.Range("A10").Value
+                                Case Is = ShExeptions.Range("A11").Value
+                                Case Is = ShExeptions.Range("A12").Value
+                                Case Is = ShExeptions.Range("A13").Value
+                                Case Is = ShExeptions.Range("A14").Value
+                                Case Is = ShExeptions.Range("A15").Value
+                                Case Is = ShExeptions.Range("A16").Value
+                                Case Is = ShExeptions.Range("A17").Value
+                                Case Is = ShExeptions.Range("A18").Value
+                                Case Is = ShExeptions.Range("A19").Value
+                                Case Is = ShExeptions.Range("A20").Value
+                                Case Is = ShExeptions.Range("A21").Value
+                                Case Is = ShExeptions.Range("A22").Value
+                                Case Is = ShExeptions.Range("A23").Value
+                                Case Is = ShExeptions.Range("A24").Value
+                                Case Is = ShExeptions.Range("A25").Value
+                                Case Is = ShExeptions.Range("A26").Value
+                                Case Is = ShExeptions.Range("A27").Value
+                                Case Is = ShExeptions.Range("A28").Value
+                                Case Is = ShExeptions.Range("A29").Value
+                                Case Is = ShExeptions.Range("A30").Value
+                            'Weekly Optional
+                                Case Is = ShExeptions.Range("C2").Value
+                                Case Is = ShExeptions.Range("C3").Value
+                                Case Is = ShExeptions.Range("C4").Value
+                                Case Is = ShExeptions.Range("C5").Value
+                                Case Is = ShExeptions.Range("C6").Value
+                                Case Is = ShExeptions.Range("C7").Value
+                                Case Is = ShExeptions.Range("C8").Value
+                                Case Is = ShExeptions.Range("C9").Value
+                                Case Is = ShExeptions.Range("C10").Value
+                                Case Is = ShExeptions.Range("C11").Value
+                                Case Is = ShExeptions.Range("C12").Value
+                                Case Is = ShExeptions.Range("C13").Value
+                                Case Is = ShExeptions.Range("C14").Value
+                                Case Is = ShExeptions.Range("C15").Value
+                                Case Is = ShExeptions.Range("C16").Value
+                                Case Is = ShExeptions.Range("C17").Value
+                                Case Is = ShExeptions.Range("C18").Value
+                                Case Is = ShExeptions.Range("C19").Value
+                                Case Is = ShExeptions.Range("C20").Value
+                                Case Is = ShExeptions.Range("C21").Value
+                                Case Is = ShExeptions.Range("C22").Value
+                                Case Is = ShExeptions.Range("C23").Value
+                                Case Is = ShExeptions.Range("C24").Value
+                                Case Is = ShExeptions.Range("C25").Value
+                                Case Is = ShExeptions.Range("C26").Value
+                                Case Is = ShExeptions.Range("C27").Value
+                                Case Is = ShExeptions.Range("C28").Value
+                                Case Is = ShExeptions.Range("C29").Value
+                                Case Is = ShExeptions.Range("c30").Value
+                                
+                                Case Else
+                                
+                                    If Language = "EN" Then
+                                        With Mymail
+                                            .BodyFormat = olFormatHTML
+                                            .Display
+                                            .To = "csaba.csontos@haldex.com"
+                                            '.To = Sendto
+                                            '.CC = dict(LogshenArray(c, LsMainBuyer))
+                                            
+                                            .Subject = "BACKLOG " & " " & VendorCode & " " & " " & VendorName & " WK" & WorksheetFunction.IsoWeekNum(Date)
+                                          
+                                            .Body = engBody & vbNewLine & .Body
+                                            .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xlsx"
+                                            .Send
+                                        End With
+                                    Else
+                                         With Mymail
+                                            .BodyFormat = olFormatHTML
+                                            .Display
+                                            .To = "csaba.csontos@haldex.com"
+                                            '.To = Sendto
+                                            '.CC = dict(LogshenArray(c, LsMainBuyer))
+                                            
+                                            
+                                            .Subject = "BACKLOG" & " " & VendorCode & " " & " " & VendorName & "WK" & WorksheetFunction.IsoWeekNum(Date)
+                                            .Body = hunBody & vbNewLine & .Body
+                                            .Attachments.Add attachmentPath & "\" & BacklogVendorArray(i, 1) & ".xlsx"
+                                            .Send
+                                        End With
+                                   End If
+                            End Select
+                End If
+        Next c
+    Next i
+    
+    Erase BacklogVendorArray
+    Erase LogshenArray
+    Set MyOutlookApp = Nothing
+    Set Mymail = Nothing
+    
+    Application.ScreenUpdating = False
+    MsgBox "Emails are sent.", vbInformation
+End Sub
+
