@@ -1,0 +1,37 @@
+Option Explicit
+
+Public Sub GenerateSingleXLS_INTERFACE()
+    Call DisableStuff
+    Call CheckifBacklog
+    Call GenerateBacklogXLSFiles
+    Call EnableStuff
+End Sub
+
+Public Sub MassXLS_Interface_INTERFACE()
+    Call DisableStuff
+    Call CheckifBacklog
+    Call GenerateMassBacklogXLSFiles
+    Call EnableStuff
+End Sub
+
+Public Sub SendMail_INTERFACE()
+    Call DisableStuff
+    
+    Dim answer As VbMsgBoxResult
+    answer = MsgBox("Have you already created backlog excelfiles?" & vbNewLine & vbNewLine & "If so you do not need to run it again for sending the mails.", vbYesNo + vbQuestion, "Confirm action")
+    
+    If answer = vbYes Then
+        Call CreateMassMail
+    Else
+        Call GenerateMassBacklogXLSFiles
+        Call CreateMassMail
+    End If
+    
+    Call EnableStuff
+End Sub
+
+Public Sub CheckifBacklog_INTERFACE()
+    Call DisableStuff
+    Call CheckifBacklog
+    Call EnableStuff
+End Sub
