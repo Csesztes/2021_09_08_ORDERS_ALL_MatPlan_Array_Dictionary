@@ -1,0 +1,31 @@
+
+Public Sub EnableStuff()
+    With Application
+        .ScreenUpdating = True
+        .Calculation = xlCalculationAutomatic
+        .DisplayAlerts = True
+        .EnableEvents = True
+    End With
+End Sub
+Public Sub DisableStuff()
+    With Application
+        .ScreenUpdating = False
+        .Calculation = xlCalculationManual
+        .DisplayAlerts = False
+        .EnableEvents = False
+        .StatusBar = "   Press Shift + m for Menu "
+    End With
+End Sub
+Public Sub Refresh()
+   ThisWorkbook.Connections(1).Refresh
+End Sub
+Public Sub CallMenu()
+    UserForm1.Show
+End Sub
+Public Sub CreateShortcut()
+    Application.OnKey "+m", "CallMenu"
+End Sub
+
+Public Sub DeleteShortcut()
+    Application.OnKey "+m"
+End Sub
