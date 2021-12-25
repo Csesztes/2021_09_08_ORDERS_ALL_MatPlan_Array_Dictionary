@@ -1,0 +1,127 @@
+Option Explicit
+
+Dim NewBacklogWB As Workbook
+Dim NewBacklogWS As Worksheet
+Dim besz As Long
+Dim CURRENTWB As Workbook
+Dim CURRENTSHEET As Worksheet
+Dim TableArray As Variant
+Dim r As Long, c As Long, row As Long
+    
+Public Property Get FileLocation() As String
+    FileLocation = "K:\Logistics\#NEW FOLDER STRUCTURE\4. MATERIAL PLANNING\1. MEMBERS\49_Csabi\HETI_BACKLOG_RIPORT\BACKLOG_XLS_MENTÉSEK\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
+    'FileLocation = "C:\Users\cscs\Desktop\" & "WK" & WorksheetFunction.IsoWeekNum(Date)
+End Property
+
+Public Sub GenerateBacklogXLSFiles()
+
+    'Create new workbook
+    Call GenerateWorkbook
+    
+    'Fill up new Workbook with data
+    Call FillNewWorkbook
+    
+    'Pivot part
+    Call CreatePivot
+
+End Sub
+Private Sub Create_BACKLOG_FOLDER()
+    On Error GoTo leave
+    MkDir FileLocation
+    MsgBox "Folder is created.", vbInformation
+    Exit Sub
+leave:
+    MsgBox "Folder already exists.", vbInformation
+End Sub
+Private Sub GenerateWorkbook()
+
+    Sheet3.PivotTables(1).PivotCache.Refresh  ' - Updates Backlog PIVOT
+    Let row = 2
+    Let besz = Sheet2.Range("D1").Value
+    Set NewBacklogWB = Workbooks.Add
+    Set NewBacklogWS = NewBacklogWB.Sheets(1)
+    Set CURRENTWB = ThisWorkbook
+    Set CURRENTSHEET = CURRENTWB.Sheets("AX_OPEN_ORDERS_TXT")
+    TableArray = CURRENTSHEET.ListObjects("AX_OPEN_ORDERS_TXT").Range
+    
+    If Dir(FileLocation, vbDirectory) = "" Then
+        Call Create_BACKLOG_FOLDER
+        GoTo SkipFolder
+    Else
+        GoTo SkipFolder
+    End If
+    
+SkipFolder:
+    NewBacklogWB.SaveAs (FileLocation & "\" & besz & ".xlsx")
+    NewBacklogWS.Name = besz
+    NewBacklogWS.Tab.Color = vbRed
+    NewBacklogWS.Range("G:G").NumberFormat = "@"
+End Sub
+
+Private Sub FillNewWorkbook()
+    With NewBacklogWS
+        CURRENTSHEET.ListObjects("AX_OPEN_ORDERS_TXT").HeaderRowRange.Copy Destination:=.Range("A1")
+        For r = LBound(TableArray, 1) To UBound(TableArray, 1) Step 1
+            If TableArray(r, 3) = besz And TableArray(r, 1) = "BACKLOG" Then
+                For c = LBound(TableArray, 2) To UBound(TableArray, 2) Step 1
+                        .Cells(row, c) = TableArray(r, c)
+                Next c
+                row = row + 1
+            End If
+        Next r
+        .Range("N:S").Delete
+        .UsedRange.EntireColumn.AutoFit
+    End With
+End Sub
+
+Private Sub CreatePivot()
+    Dim PivotWs As Worksheet
+    Dim pc As PivotCache
+    Dim pt As PivotTable
+    Set PivotWs = Worksheets.Add
+    PivotWs.Name = "PIVOT"
+    PivotWs.Tab.Color = VBA.ColorConstants.vbYellow
+    Set pc = NewBacklogWB.PivotCaches.Create(xlDatabase, NewBacklogWS.UsedRange.Address)
+    Set pt = pc.CreatePivotTable(PivotWs.Range("A1"), "BacklogPIvot")
+    
+    pt.AddFields "Item number", "Delivery date"
+    pt.AddDataField pt.PivotFields("Deliver remainder")
+
+    NewBacklogWB.Close (True)
+    
+    Set NewBacklogWB = Nothing
+    Set NewBacklogWS = Nothing
+    Set CURRENTWB = Nothing
+    Set CURRENTSHEET = Nothing
+    Set pc = Nothing
+    Set pt = Nothing
+End Sub
+
+Public Sub GenerateMassBacklogXLSFiles()
+
+    Dim dict As Scripting.Dictionary
+    Dim VendorArray As Variant
+    Dim lastrow
+    Dim r As Long
+    Dim answer As VbMsgBoxResult
+   
+    Sheet3.PivotTables(1).PivotCache.Refresh
+    
+    Let lastrow = Sheet3.UsedRange.Rows.Count
+    Let VendorArray = Sheet3.Range("B4", "B" & lastrow)
+    Set dict = New Scripting.Dictionary
+    Let answer = MsgBox("Would you like to run MASS BACKLOG XLS report?", vbYesNo + vbQuestion, "Confirm action")
+    
+    If answer = vbYes Then
+        For r = LBound(VendorArray) To UBound(VendorArray) Step 1
+            dict.Add r, VendorArray(r, 1)
+            Sheet2.Range("D1").Value = dict(r)
+            Call GenerateBacklogXLSFiles
+        Next r
+    Else
+        Call DisableStuff
+        Exit Sub
+    End If
+    
+End Sub
+
