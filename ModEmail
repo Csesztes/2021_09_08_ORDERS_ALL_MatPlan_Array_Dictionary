@@ -35,15 +35,15 @@ Public Sub CreateMassMail()
     Set dict = New Scripting.Dictionary
     
     With dict
-        .Add "Anna", "anna.hernadi@haldex.com"
-        .Add "AGIC", "agota.csepi@haldex.com"
-        .Add "BaGy", "gyorgyi.bata@haldex.com"
-        .Add "CsCs", "Csaba.Csontos@Haldex.com"
-        .Add "GaDu", "gabor.durucz@haldex.com"
-        .Add "Isti", "istvan.nagy@haldex.com"
-        .Add "Rich", "richard.tlesimunka@haldex.com"
-        .Add "BoKi", "borbala.gyulavari-kis@haldex.com"
-        .Add "KLAU", "klaudia.kovacs@haldex.com"
+        .Add "Anna", "dummy@haldex.com"
+        .Add "AGIC", "dummy@haldex.com"
+        .Add "BaGy", "dummy@haldex.com"
+        .Add "CsCs", "dummy@haldex.com"
+        .Add "GaDu", "dummy@haldex.com"
+        .Add "Isti", "dummy@haldex.com"
+        .Add "Rich", "dummy@haldex.com"
+        .Add "BoKi", "dummy@haldex.com"
+        .Add "KLAU", "dummy@haldex.com"
     End With
     
     For i = LBound(BacklogVendorArray, 1) To UBound(BacklogVendorArray, 1) Step 1
